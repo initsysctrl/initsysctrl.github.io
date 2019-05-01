@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>使用OmniCore在Unix系统上构建USDT钱包(二) | 一叶行知</title>
+<meta name="description" content="功不唐捐">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://initsysctrl.github.io/favicon.ico?v=1556735945433">
+<link rel="stylesheet" href="https://initsysctrl.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://initsysctrl.github.io">
+        <img src="https://initsysctrl.github.io/images/avatar.png?v=1556735945433" class="site-logo">
+        <h1 class="site-title">一叶行知</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      功不唐捐
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">使用OmniCore在Unix系统上构建USDT钱包(二)</h2>
+            <div class="post-date">2019-05-02</div>
+            
+              <div class="feature-container" style="background-image: url('http://upload-images.jianshu.io/upload_images/1795529-832bf66256f04b54.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240')">
+              </div>
+            
+            <div class="post-content">
+              <p><img src="http://upload-images.jianshu.io/upload_images/1795529-f0d7d1a172bc8cb9.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>本篇是关于“如何使用OmniCore在服务端构建USDT钱包”系列的下篇，主要是对上一篇<a href="https://www.jianshu.com/p/bd573e2df746">《使用OmniCore构建USDT钱包(一)》</a>的补充和总结。上一篇主要对安装、配置和基本json-api使用，以及交易所钱包模型做了简略的说明，这一篇将对常见错误、安全机制以及其他扩展做一些技术分享。</p>
+<h3 id="1omni_funded_send-212错误">1.omni_funded_send -212错误</h3>
+<p>从v0.3.1开始omnicore提供了新的转账api <a href="https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_funded_send">omni_funded_send</a> 来支持USDT的转账操作。与之前的方式不同在于，omni_funded_send支持从第三方支付手续费。但在实际操作，明明拥有充足的btc用于支付手续费，也有充分的usdt用于转账，还是会频繁出现编号**-212**错误：</p>
+<pre><code class="language-shel">$ ./omnicore-cli omni_funded_send &quot;mrAVAPxdQEZxFkunh56skB6sgJa6vrfrpo&quot; &quot;msJ2h47ZrxFJjksVvPy8ik4h2HFfa9W1zV&quot; 31 &quot;100.01&quot; &quot;mpaumxor659PhoJhXp1VCVHVwbFCZSRmuf&quot;
+error code: -212
+error message:
+Error choosing inputs for the send transaction
+</code></pre>
+<p><a href="https://github.com/OmniLayer/omnicore/issues/760#issuecomment-434745561">issues/760#</a>详细讨论了这个问题。</p>
+<p>USDT的转账本质上属于比特币的一种特殊交易(<strong>OP_RETUTRN</strong>)，需要一部分BTC来支付矿工费用。同时，根据omnilayer协议，还需要微量的比特币用于标记omni事务的接受者，这部分btc无法从手续费地址扣除，只能从发送地址扣除。因此，当发送地址缺乏btc（也就是UTXO）时，会出现 “<em>Error choosing inputs for the send transaction</em>”的错误。经过测试，默认情况下用于标记omni事务的BTC为0.0000546。因此解决这个问题的唯一方法是向发送地址中转入&gt;0.000055的BTC。</p>
+<p>但需要注意的是，发送地址上的某个UTXO将全部消耗掉，不会有找零。例如A地址向B地址转移USDT，A地址中拥有两个UTXO，分别为0.0001和0.0002，那么转账成功后，0.0001的UTXO将会被消耗掉，只剩下额度为0.0002的UTXO。</p>
+<p>但在交易所模式下，这种错误几乎不会发生。因为在中心化钱包的模式下，充值的过程会自动携带了微量的btc，这一部分比特币足够用于标记omni事务，用于下一次转账，但也仅限一次。因此，只要不使用同一个地址发送两次USDT，这种错误几乎不会出现。</p>
+<p>值得注意的是，转账错误也可能会消耗掉发送地址下的微量utxo，所以，当发生这种错误时，需要查询出缺少微量utxo的地址并进行btc的转账。但这里会引发另外一个问题，就是批量转移微量btc时，会发生<code>code:-26 message: dust</code>的错误。</p>
+<h3 id="2dust错误">2.dust错误</h3>
+<p>拒绝粉尘攻击其实是比特币钱包的一个安全机制，当钱包或节点检测到非常微小的比特币交易时，会自动把这笔交易从缓冲区里面清除出去，甚至都不让进入缓冲区就直接拒绝掉了。这是一种维护比特区块安全通畅的一种手法。当为了usdt转账的成功，像发送地址转账微量btc时，会触发这种机制。解决方法是修改配置文件中的minrealytxfee参数，令minrealytxfee=0.000000055，可以让钱包允许这笔比特币交易。但这么做🈶️可能会引发另外一个问题，修改这个参数后，可能造成usdt的转账被堵死在自己钱包的缓冲区里面，无法将交易广播出去。一个明显的特征是，你可以在构建usdt交易并且好像发送成功，并在缓冲区看到了这笔交易，但在任何比特币区块浏览器上都无法找到这笔交易。解决这个问题的方式需要将minrealytxfee从配置中删除或恢复默认值。</p>
+<h3 id="3usdt的交易可以取消吗">3.usdt的交易可以取消吗？？</h3>
+<p>这种问题需要分情况分析，如果交易已经广播出去了（哪怕手续费是0都可广播出去），也就是区块链浏览器上可以查询到了（注意这里指的是比特币的区块浏览器），那么这笔交易是无法被取消的。面对迟迟不能确认的交易，唯一能做的就是额外给矿工一笔钱，让他优先把你的交易打包进区块,如果你不愿意与矿工发生这种PY交易，那么只能继续等待。目前大部分矿池都支持这种服务，俗称交(hui)易(luo)加(kuang)速(gong)。
+还一种情况是，虽然交易是构建成功了，产生了交易id，但始终没有广播出去。交易一直在你的钱包里面躺着，区块浏览器上一直查不到。那么这种情况是可以撤销的，解决的方案是在配置文件中设置zapwallettxes=1,然后重启启动。重启后缓冲区中的交易会被清空掉，并重新开始扫描，接收自己或其他节点的交易信息。如果你还配置了minrealytxfee，那么记得在重启前把这个参数恢复默认值或干脆删除掉。这里需要解释的是，为什么区块浏览器查不到的交易可以确认没有被广播出去？原因是区块浏览器其实也是一个节点，而且属于那种<em>不挑食</em>的节点，无论你是没有支付手续费的交易，还是粉尘交易，只有验证通过他都会接收。如果区块浏览器的节点都收不到的交易，那么其他节点更不会接收。
+当然，如果你的目的并非撤销这一笔未广播的交易，而是重新发送他，那么只需要获取这笔交易的交易id，然后使用getrawtransaction 获取raw数据，再通过sendrawtransaction进行重新广播即可。只要拿到raw数据，通过任何联网的方式都可以发送到其他节点上去。</p>
+<h3 id="4-钱包安全">4. 钱包安全</h3>
+<p>数字资产不同于一般性的资产，一旦被盗或丢失，几乎无法找回，也无法进行数据回滚。对于中心化的钱包而言，用户本身对资产没有直接控制权，所有的资产安全性全部取决于中心化钱包的安全策略，因此非常有必要对安全性进行设计。以下方式仅供参考。</p>
+<h4 id="41-限制访问权限">4.1 限制访问权限</h4>
+<p>omnicore基于bitcore，自带有加密访问权限设置,可以通过bitcoin.conf文件可以进行配置。</p>
+<pre><code>rpcuser=你的rpc用户名
+rpcpassword=你的rpc密码
+rpcallowip=127.0.0.1 
+rpcport=8332
+</code></pre>
+<p>其中<code>rpcuser</code>和<code>rpcpassword</code>分别配置访问用户和访问密码，<code>rpcallowip</code>和<code>rpcport</code>分别配置可访问的网络地址。测试环境下，该地址可以为0.0.0.0/0 为全地址访问。正式环境下，需要配置为制定的访问服务器地址或者本地地址。值得注意的是，这里的安全原理是限定钱包访问对象，一旦密码泄漏或服务器被黑，那么整个钱包相当于裸奔。</p>
+<h4 id="42-离线生成地址">4.2 离线生成地址</h4>
+<p>资产的唯一凭证是私钥，因此私钥的保存非常重要。一般情况下，根据业务需求，服务端需要给每个用户分配一个地址。这里的建议是不应该分配地址的时候“即使”的去调用<code>getnewaddresss</code>，而是通过离线的方式批量生产大量地址，然后连同地址、私钥保存到数据库，同时导出地址列表给服务端进行使用。这样服务端需要分配地址时，只需要从数据库读取即可，而不需要与钱包进行交互。</p>
+<blockquote>
+<p>为了私钥的安全性，保存到数据库时可以进行二次加密。</p>
+</blockquote>
+<h4 id="43-钱包文件备份">4.3 钱包文件备份</h4>
+<p>钱包文件的备份可以直接使用bitcore的导出数据方式<code>dumpwallet</code>,每天定期保存到文件,例如：</p>
+<pre><code class="language-java">  /***
+     * 导出钱包数据以人类可读的方式
+     * @param: []
+     * @return: java.lang.String
+     **/
+    public String dumpWallet() {
+        System.currentTimeMillis();
+        String time = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;).format(new Date());
+        String file = String.format(&quot;wallet-%s.txt&quot;, time);
+        http.engine(&quot;dumpwallet&quot;, file);
+        return file;
+    }
+</code></pre>
+<p>一旦需要恢复，使用<code>importwallet</code>即可，例如：</p>
+<pre><code class="language-java">/***
+     * 钱包数据导入
+     * @param: []
+     * @return: void
+     * https://bitcoin.org/en/developer-reference#importwallet
+     *对于影响新添加的密钥的事务，调用可能需要重新扫描整个链，可能需要几分钟。
+     **/
+    public void importWallet(String fielName) {
+        http.engine(&quot;importwallet&quot;, fielName);
+    }
+
+</code></pre>
+<h4 id="44-冷钱包">4.4 冷钱包</h4>
+<p>冷钱包即不联网的钱包。对于交易所模式下而言，钱包的作业其实就相当于银行的存款系统，充值的过程相当于把金额全部汇总到中央地址。因此可以使用一台不联网的钱包生成中央地址若干，将私钥保存到U盘或其他加密硬件中，充值金额将汇集到冷钱包中保存。一旦需要提现，可以根据金额大小。小额提现可以通过热钱包直接发消息转账；大额可以使用需要使用指定U盘将私钥或钱包文件导入到钱包中，然后联网转账。操作完成后断网，重新保存硬件即可。</p>
+<blockquote>
+<p>这一过程需要注意，冷钱包因为无法联网,自然也无法知道余额。那么可以设置观察钱包对中央钱包地址进行余额观察，以确保充值到账。在实际业务中，提现过程可能还需要人工进行审核。</p>
+</blockquote>
+<h4 id="45-钱包与服务端隔离">4.5 钱包与服务端隔离</h4>
+<p>一般情况下，钱包与服务端会部署在同一台服务器上。这种方式有两个缺陷，第一是钱包需要的存储空间庞大，但需要的网络带宽很低，与业务相关的服务器部署子啊同一服务器上将造成资源的浪费。第二是这种方式有一些安全隐患。所以建议钱包单独部署到一台服务器上，如果业务允许，还可以同时备份到多台冗余服务器上。钱包与服务端的通讯可以使用 “消息队列”。</p>
+<blockquote>
+<p>注意使用<strong>Queue</strong>，而不是<strong>Topics</strong>，同一时间内，只有一个消费者和一个生产者。</p>
+</blockquote>
+<p><img src="http://upload-images.jianshu.io/upload_images/1795529-da857a39d99d32a5.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h4 id="46-usdt假钞漏洞">4.6 USDT假钞漏洞</h4>
+<p>这是一种不常见的代码漏洞，但对于部分小型交易所却很容易中招。如果你是开发人员，请务必不要进行伪造usdt的尝试(尽管很容易，但这属于违法)。如果你是运维人员请务必检查充值流程的代码细节是否存在被假钞攻击的可能。</p>
+<p>如果文章的内容对你有所帮助，希望你能点赞、投币、收藏三连。
+如果你对区块链技术有兴趣，可以加入我们在杭州的交流群。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://initsysctrl.github.io/post/shi-yong-omnicore-zai-unix-xi-tong-shang-gou-jian-usdt-qian-bao-yi">
+                  <h3 class="post-title">
+                    使用OmniCore在Unix系统上构建USDT钱包(一)
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'fda1ade7f75745ac8086',
+        clientSecret: 'a22f4cce15954afea444a530e0862442d8a05c05',
+        repo: 'initsysctrl.github.io',
+        owner: 'initsysctrl',
+        admin: ['initsysctrl'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

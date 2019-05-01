@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>使用OmniCore在Unix系统上构建USDT钱包(一) | 一叶行知</title>
+<meta name="description" content="功不唐捐">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://initsysctrl.github.io/favicon.ico?v=1556735945433">
+<link rel="stylesheet" href="https://initsysctrl.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://initsysctrl.github.io">
+        <img src="https://initsysctrl.github.io/images/avatar.png?v=1556735945433" class="site-logo">
+        <h1 class="site-title">一叶行知</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      功不唐捐
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">使用OmniCore在Unix系统上构建USDT钱包(一)</h2>
+            <div class="post-date">2019-05-02</div>
+            
+              <div class="feature-container" style="background-image: url('http://upload-images.jianshu.io/upload_images/1795529-832bf66256f04b54.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240')">
+              </div>
+            
+            <div class="post-content">
+              <p><img src="http://upload-images.jianshu.io/upload_images/1795529-832bf66256f04b54.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image">
+<strong>USDT</strong>是由<a href="https://tether.to/">Tether</a>公司发行的基于比特币区块链的一种去中心化数字货币，作为当前数字货币市场的主流锚定货币之一，其官方承诺将严格遵守与美元1:1的比例准备保证金。在技术层面，USDT是基于<a href="http://www.omnilayer.org/index.html#GetStarted">Omni协议</a>发行的代币，在Omni共识网络上令牌id为31。Omni是一个可以自由发行数字货币的平台，它完全基于比特币协议，并在原有的比特币核心上增加了新的共识网络，类似与HTTP协议基于TCP协议。</p>
+<p><a href="https://github.com/OmniLayer/omnicore">OmniCore</a>是Omni协议的C++实现，完全采用与bitcoin的区块数据，所以如果需要同时集成USDT与BTC，实际上只需要使用OmniCore一个核心钱包即可。</p>
+<p>本文的主要内容是介绍如何在服务端集成OmniCore实现USDT钱包的基本功能</p>
+<p>示例代码仓库 https://github.com/initsysctrl/WalletDe</p>
+<p>参数说明：</p>
+<ul>
+<li>服务端  Ubuntu  x86 5.4.0-6</li>
+<li>OmniCore    0.3.1  fork bitcoin 0.13</li>
+<li>语言：java 、c++</li>
+</ul>
+<h3 id="一安装与配置">一.安装与配置</h3>
+<h4 id="1安装omnicore客户端">1.安装OmniCore客户端</h4>
+<p>Step1：安装<em>git</em>和<em>pkg-config</em>,已经安装过的可以跳过</p>
+<pre><code class="language-shell">sudo apt-get install git
+sudo apt-get install pkg-config
+</code></pre>
+<p>Step2:Clone <em>OmniCore</em></p>
+<pre><code class="language-shell">git clone https://github.com/OmniLayer/omnicore.git
+</code></pre>
+<p>Step3:安装依赖项</p>
+<p>首先安装必须的构建工具</p>
+<pre><code>sudo apt-get install build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils
+</code></pre>
+<p>然后安装<em>boost</em>，为了兼容各个系统版本，建议安装所有的boost开发包</p>
+<pre><code>sudo apt-get install libboost-all-dev
+</code></pre>
+<p>最后安装<em>BerkeleyDB</em>。尽管Ubuntu自带libdb-dev，但同样为了钱包的兼容性，建议使用下面的版本</p>
+<pre><code class="language-shell">sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:bitcoin/bitcoin
+sudo apt-get update
+sudo apt-get install libdb4.8-dev libdb4.8++-dev
+</code></pre>
+<p>本文中并不需要构建Bitcoin-Qt，所以没有依赖ZMQ和GUI。</p>
+<p>Step4:开始构建OmniCore</p>
+<p>上一步依赖安装完毕后，进入OmnIcore安装目录</p>
+<pre><code class="language-shell">cd omnicore/
+</code></pre>
+<p>执行构建脚本</p>
+<pre><code class="language-shell">./autogen.sh
+./configure
+make
+</code></pre>
+<h4 id="2bitcoin-基本配置">2.bitcoin 基本配置</h4>
+<p>启动之前，需要配置位于工程目录之下的.bitcoin文件夹中的OmniCore配置文件<code>bitcoin.conf</code></p>
+<pre><code>server=1  
+txindex=1 
+rpcuser=你的rpc用户名
+rpcpassword=你的rpc密码
+rpcallowip=127.0.0.1 
+rpcport=8332
+paytxfee=0.00001
+minrelaytxfee=0.00001
+datacarriersize=80
+logtimestamps=1
+omnidebug=tally  
+omnidebug=packets
+omnidebug=pending
+</code></pre>
+<ul>
+<li>
+<p><code>server=1</code>代表开启RPC访问</p>
+</li>
+<li>
+<p><code>txindex=1</code>代表事务初始索引</p>
+</li>
+<li>
+<p><code>recuser</code>和<code>rpcpassword</code> 代表rpc访问的身份验证，</p>
+</li>
+<li>
+<p><code>rpcallowip</code> 和<code>rpcport</code>代表允许访问钱包的ip地址及端口。</p>
+</li>
+<li>
+<p><code>paytxfee</code>和<code>minrelattxfee</code>控制bitcoin交易的手续费，Omni交易也属于一种特殊的比特币交易，打包与广播也需要向矿工支付费用。手续费设置过低会造成交易确认慢甚至交易失败，手续费过高会造成资源的浪费(以2018.09.13的BTC价格换算，每多消耗0.0001btc需要浪费4rmb)，所以设置动态配置交易手续费十分必要。预估比特币交易手续费可以使用下面的网址<a href="https://bitcoinfees.earn.com/">bitcoinfees.earn</a>，<a href="https://www.buybitcoinworldwide.com/fee-calculator/">buybitcoinworldwide</a>。假设当前预估的比特币交易费率为0.0000001BTC/Byte,那么需要设置<code>paytxfee=0.00001BTC/kByte</code>。</p>
+</li>
+</ul>
+<h4 id="3启动方式">3.启动方式</h4>
+<p>上述构建完成后，进入<code>omnicore/src</code> 目录，开始启动钱包，启动时可以配置启动项以选择不同的网络。</p>
+<ul>
+<li><code>./omnicored -testnet</code> 连接test3测试网络，会同步test3网络的区块数据（约20G）</li>
+<li><code>./omnicored -regtest</code> 单机运行，不需要连接其他网络，区块数据在本地运行。</li>
+<li><code>./omnicored</code>连接比特币主网网络，会同步真实区块数据（约180G）。</li>
+</ul>
+<p>钱包初始化完成后，将自动开始同步区块。启动主网或测试网后需要同步一段较长的时间，在这段时间内不要进行任何交易。可以新开一个终端连接钱包所在服务器，通过<code>getinfo</code>和<code>omni_getinfo</code>可以查看底层bitcoin信息和上层omni信息。<a href="https://btc.com//?_ga=2.150205750.1635735922.1536840720-512619047.1535525386">区块浏览器</a>（<a href="https://tchain.btc.com/">Test3区块浏览器</a>）可以作为区块同步的参考。同步将作为守护进程在后台执行，如果需要停止，使用指令 <code>./omnicore-cli stop</code>。前期开发建议在test3测试网络上进行。</p>
+<pre><code class="language-basic">$ ./omnicore-cli getinfo     
+{
+  &quot;version&quot;: 130200,
+  &quot;protocolversion&quot;: 70015,
+  &quot;walletversion&quot;: 130000,
+    &quot;balance&quot;: 4.85909131, //钱包比特币总余额
+  &quot;blocks&quot;: 1413349,
+  &quot;timeoffset&quot;: 0,
+  &quot;connections&quot;: 0,
+  &quot;proxy&quot;: &quot;&quot;,
+  &quot;difficulty&quot;: 56234572.68927951,
+    &quot;testnet&quot;: true,  //是否是测试网
+  &quot;keypoololdest&quot;: 1535371434,
+  &quot;keypoolsize&quot;: 100,
+  &quot;paytxfee&quot;: 0.00010000,
+  &quot;relayfee&quot;: 0.00001000,
+  &quot;errors&quot;: &quot;&quot;
+}
+
+</code></pre>
+<pre><code class="language-shell">$ ./omnicore-cli omni_getinfo
+{
+  &quot;omnicoreversion_int&quot;: 30001000,
+  &quot;omnicoreversion&quot;: &quot;0.3.1&quot;,  //omni core 版本
+  &quot;mastercoreversion&quot;: &quot;0.3.1&quot;,
+  &quot;bitcoincoreversion&quot;: &quot;0.13.2&quot;,  //基于比特币版本
+  &quot;block&quot;: 1413349,//区块要举高高
+  &quot;blocktime&quot;: 1536841368,
+  &quot;blocktransactions&quot;: 0,
+  &quot;totaltrades&quot;: 15601,
+  &quot;totaltransactions&quot;: 43731,
+  &quot;alerts&quot;: [
+  ]
+}
+
+</code></pre>
+<h3 id="二rpc访问">二.RPC访问</h3>
+<h4 id="1-json-rpc协议">1. json-rpc协议</h4>
+<p>json-rpc是一种轻量级传输协议，定义一个完整网络请求中请求对象的格式和响应对象的格式。与rest api相比，仅仅只是数据格式的差异而已，网络请求的本身并没有什么差别。</p>
+<p>请求对象：</p>
+<pre><code class="language-json"> {
+    &quot;jsonrpc&quot;: &quot;2.0&quot;,//rpc版本号
+    &quot;method&quot;: &quot;your_method&quot;,//方法名
+    &quot;params&quot;: [//参数数组
+        &quot;var1&quot;,
+        &quot;var2&quot;
+    ],
+    &quot;id&quot;: 9527//请求
+}
+</code></pre>
+<p>响应对象（正确）：</p>
+<pre><code class="language-json"> {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;result&quot;: &quot;this is result&quot;, &quot;id&quot;: 9527}
+</code></pre>
+<p>响应对象（错误）：</p>
+<pre><code class="language-json">{
+    &quot;result&quot;: null,
+    &quot;error&quot;: {
+        &quot;code&quot;: -32601,//错误码
+        &quot;message&quot;: &quot;Method not found&quot;//错误原因
+    },
+    &quot;id&quot;: 9527
+}
+</code></pre>
+<h4 id="2-通过rpc接口连接钱包">2. 通过RPC接口连接钱包</h4>
+<p>请求的协议是http，请求的地址是钱包主机地址。身份验证信息将以<em>Authorzation</em>的形式添加到<strong>headers</strong>中，方法、参数、id信息将以raw的形式添加到h<strong>body</strong>中：</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1795529-a9050880bf7fafb4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1795529-f2c17e2df1df1eb4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>返回的结果如下：</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1795529-4ab96c3a712b6add.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>服务端，以java为例：</p>
+<pre><code class="language-java">    String RPC_USER = &quot;your_user_name&quot;;
+    String RPC_PASSWORD = &quot;your_password&quot;;
+	RestTemplate client = new RestTemplateBuilder()
+                .basicAuthorization(RPC_USER, RPC_PASSWORD)
+                .rootUri(URL)
+                .build();
+	client.postForObject(URL, baseRpcReq, BaseRPCresponse.class);
+
+</code></pre>
+<p>或者采用<code>jsonrpc4j</code>，这种方式可以捕捉异常便于调试：</p>
+<pre><code class="language-xml">&lt;!--JSON-PRP handler--&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.github.briandilley.jsonrpc4j&lt;/groupId&gt;
+        &lt;artifactId&gt;jsonrpc4j&lt;/artifactId&gt;
+        &lt;version&gt;1.5.3&lt;/version&gt;
+    &lt;/dependency&gt;
+</code></pre>
+<pre><code class="language-java">    String RPC_USER = &quot;your_user_name&quot;;
+    String RPC_PASSWORD = &quot;your_password&quot;;
+	String cred = Base64.encodeBase64String((RPC_USER + &quot;:&quot; + RPC_PASSWORD).getBytes());
+        Map&lt;String, String&gt; headers = new HashMap&lt;&gt;(1);
+        headers.put(&quot;Authorization&quot;, &quot;Basic &quot; + cred);
+        try {
+            this.mClient = new JsonRpcHttpClient(new URL(URL), headers);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+</code></pre>
+<p>rpc仅仅只是一种数据请求的固定格式，username和passwrod并不能保证访问的安全性。钱包需要配置rpcallowip字段来限定运行访问钱包的ip地址，默认情况下为<code>localhost</code>，在测试节点，可以使用<code>0.0.0.0/0</code>开启无限制访问。</p>
+<h3 id="三核心指令集">三.核心指令集</h3>
+<p>Omnicore的指令集完全兼容bitcoin，除了与omni令牌相关的指令集外，其余的指令集都来全部继承自bitcoin-cli。下面为钱包创建的核心指令集，更详细的内容可以从<a href="https://github.com/OmniLayer/omnicore/blob/omnicore-0.0.10/src/omnicore/doc/rpc-api.md">OmniCore JSON-RPC</a>和<a href="https://bitcoin.org/en/developer-reference">BitCoin JSON-RPC</a>进行查询。</p>
+<h4 id="1生成btc-usdt地址">1.生成BTC、USDT地址</h4>
+<p>因为Omnicore底层基于Bitcoin，所以USDT地址实际上就是BTC地址，当前的比特币钱包采用的是<strong>deterministic wallet</strong>钱包模式，使用如树状层级推导 (hierarchical deterministic) 的推导方式，从一个随机数生成源推导所有地址密钥。所以一个USDT钱包中，所有的地址实际上来自同一个种子源。如果是测试网络，地址一般以&quot;m&quot;,&quot;n&quot;获取新地址可以指定account名称，如果不指定，那么会分配到默认账户。</p>
+<pre><code class="language-shell">$ ./omnicore-cli getnewaddress
+mkRj6TFspkyso96LvDTJq77DwoqoFMBEcJ
+</code></pre>
+<pre><code class="language-shell">$ ./omnicore-cli getnewaddress feeaccount
+n1WuiWX5zjmz7MVymUtsdSnC325xQ1v4SR
+</code></pre>
+<p>一个账户名可以对应多个地址</p>
+<pre><code class="language-shell">$ ./omnicore-cli getaddressesbyaccount feeaccount
+[
+  &quot;mk8cMZBX7v7zzzc9FHBMQbRNVPwRtq9CZ2&quot;, 
+  &quot;n1WuiWX5zjmz7MVymUtsdSnC325xQ1v4SR&quot;
+]
+</code></pre>
+<p>如果是正式环境，那么必须使用其他地址转账或提现到新地址才能获取BTC和USDT。如果使用regtest本地网络，那么需要通过挖矿获得比特币。如果使用test3测试网络，那么TBTC可以从<a href="https://testnet.coinfaucet.eu/en/">coinfaucet</a>或者<a href="https://testnet.manu.backend.hamburg/faucet">faucet</a>获取。但在测试网络是没有测试usdt的，所有只能用test omni代替usdt进行测试。发送TBTC<code>moneyqMan7uh8FqdCA2BV5yZ8qVrc9ikLP</code>即可获得少量TOMNI，汇率为100 TOMNI/1 TBTC，令牌id分别为1和2。</p>
+<h4 id="2查询btc的未花费列表">2.查询BTC的未花费列表</h4>
+<p>比特币实际上没有“余额”这个概念，只有<strong>UTXO</strong>(Unspent Transaction Outputs)。在传统的交易系统中，从A地址转给B地址100个单位的资产的过程是把A地址下的余额减100，B地址下的余额加100，两步必须满足原子性。但在比特币中A地址下并没有余额，只有一张张零碎的“支票”，记录着每一笔转入资金，转账的过程实际上是把一张或者多张“支票”凑起来花费掉，没有花掉的部分作为“找零”返回给找零地址。所以一般需要把找零地址设置为发送地址，如果没有的话，系统将在钱包中随机挑选一个地址作为“找零地址”。</p>
+<p><strong>列出比特币UTXO：</strong></p>
+<p>方法： <a href="https://bitcoin.org/en/developer-reference#listunspent">listunspent</a></p>
+<p>参数：</p>
+<ul>
+<li>min_confrim  (int,可选) 最小确认</li>
+<li>max_comfrim（int ,可选）最大确认</li>
+<li>address （string[],可选）地址列表</li>
+</ul>
+<p>返回：UTXO列表</p>
+<pre><code class="language-json">$ ./omnicore-cli listunspent 0 999999 '[&quot;mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC&quot;]'
+[
+  {
+    &quot;txid&quot;: &quot;ef6e77063dff8988b82044286b3d3f022df5a14aae260179a95c2e80c0e47ec4&quot;,//来源
+    &quot;vout&quot;: 2,
+    &quot;address&quot;: &quot;mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC&quot;,//地址
+    &quot;account&quot;: &quot;account0&quot;,//所属账户
+    &quot;scriptPubKey&quot;: &quot;76a914293d87f697ca96ffb00f049b60645e5c8979498488ac&quot;,
+    &quot;amount&quot;: 0.00054600,//支票金额
+    &quot;confirmations&quot;: 799,
+    &quot;spendable&quot;: true,//可花费？
+    &quot;solvable&quot;: true
+  }
+]
+</code></pre>
+<h4 id="3usdt转账">3.USDT转账</h4>
+<p>USDT的转账实际上是代号为31的OmniCore令牌转账。Omnicore提供了多套api实现令牌转账功能，v0.3.1版本之前，可以使用<code>omni_send</code>和<code>omni_sendall</code>。这种方式必须保证发送地址上不仅需要有令牌余额，还需要有一定数量的比特币用于支付手续费。从v0.3.1版本开始，Omnicore提供了两个新的api <code>omni_funded_send</code>和<code>omni_funded_sendall</code>，这种方式的好处在于可以指定手续费的支付方，所有的令牌交易都可以使用统一的地址进行支付比特币手续费，而不需要发送者自身拥有比特币。但这里并未设定手续费的具体数量，系统将根据在配置文件中的关于手续费的配置文件进行动态设定。</p>
+<p>方法 <code>omni_funded_send</code></p>
+<p>参数</p>
+<ul>
+<li>
+<p><strong>fromaddress</strong>        (string,必选) 令牌发送者</p>
+</li>
+<li>
+<p><strong>toaddress</strong>            (string,必选) 令牌接收者</p>
+</li>
+<li>
+<p><strong>propertyid</strong>           (number,必选) 令牌id</p>
+</li>
+<li>
+<p><strong>amount</strong>               (string,必选) 发送金额</p>
+</li>
+<li>
+<p><strong>feeaddress</strong>           (string,可选)用于支付手续费的地址，如果设置此地址，那么此地址上必须拥有比特币</p>
+</li>
+</ul>
+<p>返回：事务 hex</p>
+<pre><code class="language-json">$ ./omnicore-cli omni_funded_send mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC mqrA5Ai8XdKe1ob1L2HwyYr3TXUf9nUeBf 1 5 mpaumxor659PhoJhXp1VCVHVwbFCZSRmuf
+
+a25260a79243a48df21ca2d9fba2209818ea1339026d91b6476d531929c52dad
+</code></pre>
+<p>错误返回:</p>
+<pre><code class="language-json">{
+    error code: -212
+	error message:Error choosing inputs for the send transaction
+}
+</code></pre>
+<p>发送USDT或其他令牌的过程属于一种比较特殊的比特币交易，交易的打包广播同样需要支付矿工费用，费用太低交易将无法成功。发送令牌的过程可能会出现各种错误，可以检查发送者地址是否是本地钱包地址令牌余额是否充足、feeaddress是否是本机钱包地址、比特币余额是否充足。</p>
+<p>除了使用基本的api外，还可以使用 <a href="https://github.com/OmniLayer/omnicore/wiki/Use-the-raw-transaction-API-to-create-a-Simple-Send-transaction">Raw Transaction API</a> 创建并广播事务,但过程相当的繁琐，需要经过七步构建。一般情况下不建议这么做，但如果需要将打包签名的过程与发送的过程进行分离，那么就必须使用这种方式。例如某些情况下，需要在冷钱包中签名，然后在热钱包中广播。</p>
+<h4 id="4查询交易事务">4.查询交易事务</h4>
+<p>方法：omni_gettransaction</p>
+<p>参数：hex(string_64位事务哈希)，发送交易后的交易哈希txid</p>
+<p>返回 ：</p>
+<ul>
+<li>未确认状态</li>
+</ul>
+<pre><code class="language-json">$ ./omnicore-cli omni_gettransaction a25260a79243a48df21ca2d9fba2209818ea1339026d91b6476d531929c52dad
+
+{
+  &quot;txid&quot;: &quot;a25260a79243a48df21ca2d9fba2209818ea1339026d91b6476d531929c52dad&quot;,//交易哈希
+  &quot;fee&quot;: &quot;0.00002765&quot;,//手续费金额
+  &quot;sendingaddress&quot;: &quot;mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC&quot;,//发送者
+  &quot;referenceaddress&quot;: &quot;mqrA5Ai8XdKe1ob1L2HwyYr3TXUf9nUeBf&quot;,//接受者
+  &quot;ismine&quot;: true,//是否本机地址
+  &quot;version&quot;: 0,
+  &quot;type_int&quot;: 0,
+  &quot;type&quot;: &quot;Simple Send&quot;,
+  &quot;propertyid&quot;: 1,
+  &quot;divisible&quot;: true,
+  &quot;amount&quot;: &quot;5.00000000&quot;,//发送令牌金额
+  &quot;confirmations&quot;: 0//确认数，，默认情况下，&gt;5一般才认为交易有效
+}
+
+</code></pre>
+<ul>
+<li>已确认状态</li>
+</ul>
+<pre><code class="language-json">$ ./omnicore-cli omni_gettransaction a25260a79243a48df21ca2d9fba2209818ea1339026d91b6476d531929c52dad
+
+{
+  &quot;txid&quot;: &quot;a25260a79243a48df21ca2d9fba2209818ea1339026d91b6476d531929c52dad&quot;,//交易哈希
+  &quot;fee&quot;: &quot;0.00002765&quot;,
+  &quot;sendingaddress&quot;: &quot;mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC&quot;,//发送address
+  &quot;referenceaddress&quot;: &quot;mqrA5Ai8XdKe1ob1L2HwyYr3TXUf9nUeBf&quot;,//接收address
+  &quot;ismine&quot;:  true,
+  &quot;version&quot;: 0,
+  &quot;type_int&quot;: 0,
+  &quot;type&quot;: &quot;Simple Send&quot;,//交易类型
+  &quot;propertyid&quot;: 1,
+  &quot;divisible&quot;: true,
+  &quot;amount&quot;: &quot;5.00000000&quot;,
+  &quot;valid&quot;: true,//已经成功
+  &quot;blockhash&quot;: &quot;00000000000000460219a9fe9761cb92120eb7d67b640d2b643a0a05185fa2a0&quot;,
+  &quot;blocktime&quot;: 1536324400,
+  &quot;positioninblock&quot;: 1391,
+  &quot;block&quot;: 1412595,
+  &quot;confirmations&quot;: 1123//通过节点确认
+}
+</code></pre>
+<h4 id="5查询本地事务列表">5.查询本地事务列表</h4>
+<p>方法：<code>omni_listtransactions</code></p>
+<p>参数：</p>
+<table>
+<thead>
+<tr>
+<th>addfilt</th>
+<th>string</th>
+<th>可选</th>
+<th>地址过滤 (default: <code>&quot;*&quot;</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>count</code></td>
+<td>number</td>
+<td>可选</td>
+<td>最大数量(default: <code>10</code>)</td>
+</tr>
+<tr>
+<td><code>skip</code></td>
+<td>number</td>
+<td>可选</td>
+<td>跳过第n个事务 (default: <code>0</code>)</td>
+</tr>
+<tr>
+<td><code>startblock</code></td>
+<td>number</td>
+<td>可选</td>
+<td>起始的区块(default: <code>0</code>)</td>
+</tr>
+<tr>
+<td><code>endblock</code></td>
+<td>number</td>
+<td>可选</td>
+<td>last block to include in the search (default: <code>999999</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>​	请求：</p>
+<pre><code class="language-json">$ ./omnicore-cli omni_listtransactions
+[
+  {
+    &quot;txid&quot;: &quot;a25260a79243a48df21ca2d9fba2209818ea1339026d91b6476d531929c52dad&quot;,//事务哈希
+    &quot;fee&quot;: &quot;0.00002765&quot;,//手续费
+    &quot;sendingaddress&quot;: &quot;mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC&quot;,//发送
+    &quot;referenceaddress&quot;: &quot;mqrA5Ai8XdKe1ob1L2HwyYr3TXUf9nUeBf&quot;,//接收
+    &quot;ismine&quot;: true,
+    &quot;version&quot;: 0,
+    &quot;type_int&quot;: 0,
+    &quot;type&quot;: &quot;Simple Send&quot;,//类型
+    &quot;propertyid&quot;: 1,//令牌id
+    &quot;divisible&quot;: true,
+    &quot;amount&quot;: &quot;5.00000000&quot;,
+    &quot;valid&quot;: true,//是否有效的交易事务
+    &quot;blockhash&quot;: &quot;00000000000000460219a9fe9761cb92120eb7d67b640d2b643a0a05185fa2a0&quot;,
+    &quot;blocktime&quot;: 1536324400,
+    &quot;positioninblock&quot;: 1391,
+    &quot;block&quot;: 1412595,
+    &quot;confirmations&quot;: 221//确认数，默认大于5猜有效
+  }, 
+  {
+    &quot;txid&quot;: &quot;2e527c3c85b2a9b21252b50efd6cda31022ee5ebcf9fee451255bea61211b799&quot;,
+    &quot;fee&quot;: &quot;0.00002570&quot;,
+    &quot;sendingaddress&quot;: &quot;mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC&quot;,
+    &quot;referenceaddress&quot;: &quot;mq8fRoxRB9M4vstJ9BrEBaysZVUjxPxoK3&quot;,
+    &quot;ismine&quot;: true,
+    &quot;version&quot;: 0,
+    &quot;type_int&quot;: 0,
+    &quot;type&quot;: &quot;Simple Send&quot;,
+    &quot;propertyid&quot;: 2,
+    &quot;divisible&quot;: true,
+    &quot;amount&quot;: &quot;3.00000000&quot;,
+    &quot;valid&quot;: true,
+    &quot;blockhash&quot;: &quot;0000000000000007c957dc0642c39c26b9bb46327620e18e23244936f894c570&quot;,
+    &quot;blocktime&quot;: 1536324082,
+    &quot;positioninblock&quot;: 2115,
+    &quot;block&quot;: 1412594,
+    &quot;confirmations&quot;: 222
+  }
+]
+</code></pre>
+<p>如果交易刚刚发送，即没有被验证是否合法，也没有被节点确认，那么该事务将处于pengding 状态使用 <code>omni_listtransactions</code> 不能作为转账的确认状态。使用<code>omni_listpendingtransactions</code>可以在缓冲区找到这一类型的事务信息，但pengding状态并不稳定，不能用于确认转账结果。</p>
+<h4 id="6查询指定地址的usdt余额">6.查询指定地址的USDT余额</h4>
+<p>查询USDT的余额即查询第31号令牌的余额。</p>
+<p>方法：<code>omni_getbalance</code></p>
+<p>参数：</p>
+<ul>
+<li>address 地址</li>
+<li>id 令牌id</li>
+</ul>
+<pre><code class="language-json">$ ./omnicore-cli omni_getbalance mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC 1
+{
+   &quot;balance&quot;: &quot;4.00000000&quot;,//余额
+   &quot;reserved&quot;: &quot;0.00000000&quot;,
+   &quot;frozen&quot;: &quot;0.00000000&quot;//被冻结，没啥用
+}
+</code></pre>
+<h4 id="7查询钱包内的所有地址的usdt余额列表">7.查询钱包内的所有地址的USDT余额列表</h4>
+<p>方法：<code>omni_getwalletaddressbalances</code>将返回钱包内所有余额不为0的地址列表，每个地址都可能有不同的令牌余额。令牌id如果为31，那么这个令牌即USDT。</p>
+<pre><code class="language-json">$ ./omnicore-cli omni_getwalletaddressbalances
+[
+    {
+        &quot;address&quot;: &quot;mjH1iB7wt5TC4f8qjvZqtmBXd1aCPSPinC&quot;,//地址
+        &quot;balances&quot;: [
+            {
+                &quot;propertyid&quot;: 1,//令牌id，31=USDT
+                &quot;name&quot;: &quot;Omni&quot;,//令牌名称
+                &quot;balance&quot;: &quot;4.00000000&quot;,//余额
+                &quot;reserved&quot;: &quot;0.00000000&quot;,
+                &quot;frozen&quot;: &quot;0.00000000&quot;
+            },
+            {
+                &quot;propertyid&quot;: 2,
+                &quot;name&quot;: &quot;Test Omni&quot;,
+                &quot;balance&quot;: &quot;7.00000000&quot;,
+                &quot;reserved&quot;: &quot;0.00000000&quot;,
+                &quot;frozen&quot;: &quot;0.00000000&quot;
+            }
+        ]
+    }
+]
+</code></pre>
+<h4 id="8查询钱包内的usdt总额">8.查询钱包内的USDT总额</h4>
+<p>方法：<code>omni_getwalletbalances</code></p>
+<p>返回：</p>
+<pre><code class="language-json">$ ./omnicore-cli omni_getwalletbalances
+[
+    {
+        &quot;propertyid&quot;: 1,//令牌id
+        &quot;name&quot;: &quot;Omni&quot;,//令牌名称
+        &quot;balance&quot;: &quot;11.00000000&quot;,//可用余额
+        &quot;reserved&quot;: &quot;0.00000000&quot;,
+        &quot;frozen&quot;: &quot;0.00000000&quot;
+    },
+    {
+        &quot;propertyid&quot;: 2,
+        &quot;name&quot;: &quot;Test Omni&quot;,
+        &quot;balance&quot;: &quot;8.00000000&quot;,
+        &quot;reserved&quot;: &quot;0.00000000&quot;,
+        &quot;frozen&quot;: &quot;0.00000000&quot;
+    }
+]
+</code></pre>
+<p>其他的相关指令集会在源代码中示例出来。</p>
+<h3 id="四中心化钱包模式">四.中心化钱包模式</h3>
+<p>中心化钱包的本质是代替用户托管资产，钱包保存了所有地址的私钥，对上面的令牌有完全的使用权。对于用户而言，对资产的流动有知情权，但并没有实际控制权。一个完整的中心化钱包可以分为两层，记账层和区块底层，至少需要集成四个基本的业务功能：</p>
+<h4 id="1地址生成">1.地址生成</h4>
+<p>USDT地址即比特币区块链上的地址，借助比特币内核 <code>getnewaddress</code>可以从同一个种子推导出无数个地址，生成地址的过程类似与把一枚硬币连续抛255次。服务端需要在自己的用户系统中为每个用户生成不同的地址，用户的看到的资产实际上服务端的记账状态，并非真实资产。</p>
+<h4 id="2扫描充值事务">2.扫描充值事务</h4>
+<p>钱包一旦启动，会开启同步区块的守护进程，服务端不需要进行手动的区块同步操作。但服务端需要定期的扫描区块以发现并确认充值事务。通过<code>omni_listtransactions</code>可以查询当前钱包内的事务列表，根据业务需要，可以定时每小时全量扫描一次，每次最多返回100条事务。遍历每条事务，如果事务已经验证且确认数大于等于6，那么被认为是一条有效的充值记录。然后判断记账层是否已经记录了该事务，如果没有记录则写入充值记录表，同时查询绑定该地址的用户，在余额表中该用户的可用余额加上充值金额。如果已经写入了那么跳过本次事务。单次的事务处理流程如下:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1795529-ecde9c85e9038edc.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>这是最简易的模式，根据业务情景可以适当调整扫描周期和最大事务数。</p>
+<h4 id="3转移充值余额">3.转移充值余额</h4>
+<p>用户充值后USDT保留在用户绑定的区块地址中，需要及时的转移到中央地址中去。中央地址即保存整个平台资产的一个或者多个地址。可以使用与普通用户相同的“种子”，也可以单独使用一个钱包，或者直接使用冷钱包离线保存。在保证安全和效率的情况下，越少的转账次数越好，可以最大限度的节省手续费。获取钱包地址USDT余额列表有多种方式 ，从v0.3.1开始可以使用<code>omni_getwalletaddressbalances</code>直接返回所有每个地址的所有令牌列表。一旦检测id=31的令牌余额不为0，且大于最小额度（一般大于预估的手续费）则使用<code>omni_funded_sendall</code>转移所有的USDT到指定的中央钱包。</p>
+<p>但需要注意的是，在Omnicore上从发送者转账转移指定id的令牌到接受者，当交易被创建且被发送成功后，交易验证需要一定时间，发送者的令牌余额不会立即变化。所以如果扫描余额的时间周期太短，会造成一个地址上的余额被多次转移，虽然只会有一次成功但会重复消耗手续费，所以建议2-6hour扫描一次本地钱包余额列表。</p>
+<h4 id="4提现事件">4.提现事件</h4>
+<p>提现是指用户把实际资产从平台钱包中转移出去，只要判断是本人操作而且提现金额小于可用额度就被认为是有效的提现请求。根据提现地址的不同有两种情况：</p>
+<p>当提现地址是钱包内的地址时（即平台内的另外一个用户）属于内部转账。这种方式并不需在从中央钱包发送USDT到指定地址，只需要在记账层进行依次对两个账户上的USDT余额进行修改，几乎没有时间延迟。</p>
+<p>当提现地址是不是钱包内的地址时（非平台用户）属于外部转账。这种方式需要操作区块链，不会马上进行确认，根据手续费设定和当前比特币主网拥堵状况可能需要几小时到一天的确认时间。</p>
+<p>对于外部转账，如果用户绑定的区块地址上还存在余额，那么优先使用该地址进行转账，其次选择中央钱包进行转账。可以使用<code>omni_funded_send</code>来进行创建USDT交易并广播，交易发送成功后会生成的事务哈希。根据事务哈希，通过<code>omni_gettransaction</code>可以进行提现进度的跟踪。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1795529-b042408b995bb7bd.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>关于实际开发中的常见问题、以及钱包与服务端交互，或其他安全问题会在下一篇博客中更新
+<a href="https://www.jianshu.com/p/3aa3ab01b296">《使用OmniCore在Unix系统上构建USDT钱包(二)》</a></p>
+<p>如果文章的内容对你有所帮助，希望你能点赞、投币、收藏三连。
+如果你对区块链技术有兴趣，可以加入我们在杭州的交流群。
+参考资料：</p>
+<p><a href="https://tether.to/">Tether USDT 官网</a></p>
+<p><a href="https://omniexplorer.info/asset/31">Omni Explore.info</a></p>
+<p><a href="https://github.com/OmniLayer">Omni Layer GitHub</a></p>
+<p><a href="https://github.com/OmniLayer/omnicore/blob/omnicore-0.0.10/src/omnicore/doc/rpc-api.md">OmniCore JSON-PRC API</a></p>
+<p><a href="https://bitcoin.org/en/developer-reference#getnewaddress">BitCoin JSON-PRC-APi</a></p>
+<p><a href="https://en.bitcoin.it/wiki/Transaction_fees">比特币WIKI之手续费</a></p>
+<p><a href="https://tchain.btc.com/">比特币Test3区块浏览器</a></p>
+<p><a href="https://btc.com/">比特币主网区块浏览器</a></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://initsysctrl.github.io/tag/i-MgGpA1a" class="tag">
+                    区块链
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://initsysctrl.github.io/post/shi-yong-web3j-gou-jian-yi-tai-fang-qian-bao">
+                  <h3 class="post-title">
+                    使用web3j构建以太坊钱包
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'fda1ade7f75745ac8086',
+        clientSecret: 'a22f4cce15954afea444a530e0862442d8a05c05',
+        repo: 'initsysctrl.github.io',
+        owner: 'initsysctrl',
+        admin: ['initsysctrl'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

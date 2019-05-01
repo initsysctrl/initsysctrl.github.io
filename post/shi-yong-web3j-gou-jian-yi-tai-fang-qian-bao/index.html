@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>使用web3j构建以太坊钱包 | 一叶行知</title>
+<meta name="description" content="功不唐捐">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://initsysctrl.github.io/favicon.ico?v=1556735945433">
+<link rel="stylesheet" href="https://initsysctrl.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://initsysctrl.github.io">
+        <img src="https://initsysctrl.github.io/images/avatar.png?v=1556735945433" class="site-logo">
+        <h1 class="site-title">一叶行知</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      功不唐捐
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">使用web3j构建以太坊钱包</h2>
+            <div class="post-date">2019-05-02</div>
+            
+              <div class="feature-container" style="background-image: url('https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1557340733&amp;di=4342260132456e07998293cd8141eafd&amp;imgtype=jpg&amp;er=1&amp;src=http%3A%2F%2F5b0988e595225.cdn.sohucs.com%2Fimages%2F20180416%2Fe18d4c8f22304ef5a866ea1ea2e235e6.png')">
+              </div>
+            
+            <div class="post-content">
+              <p>创建一个以太坊钱包有多种方式，一般情况下可以通过geth、EtherumWallet等客户端。对于前端，可以使用插件MetaMask进行创建。这几种方式技术实现虽然不同，但底层原理是一致的。本文主要介绍如何通过web3j架构创建一个以太坊的冷钱包，从而实现将这一过程部署在服务端或者android端。</p>
+<p>文中涉及到的技术栈有：</p>
+<p><a href="https://web3j.io/">Web3j</a> ：轻量级java库，用于连接以太坊客户端或节点</p>
+<p><a href="https://infura.io/">Infura</a> :以太坊基础设施，用于访问以太坊主网络或测试网络</p>
+<p><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java</a>：编程语言</p>
+<h3 id="1web3j的安装">1.Web3j的安装</h3>
+<p>无论是java工程还是android工程，web3j都提供了maven和grade 两种依赖方式：</p>
+<ol>
+<li>java工程</li>
+</ol>
+<ul>
+<li>manen依赖</li>
+</ul>
+<pre><code class="language-Xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.web3j&lt;/groupId&gt;
+  &lt;artifactId&gt;core&lt;/artifactId&gt;
+  &lt;version&gt;3.3.1&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<ul>
+<li>gradle依赖</li>
+</ul>
+<pre><code class="language-groovy">compile ('org.web3j:core:3.3.1')
+</code></pre>
+<ol start="2">
+<li>android工程</li>
+</ol>
+<ul>
+<li>maven依赖</li>
+</ul>
+<pre><code class="language-xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.web3j&lt;/groupId&gt;
+  &lt;artifactId&gt;core&lt;/artifactId&gt;
+  &lt;version&gt;3.3.1-android&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<ul>
+<li>gradle依赖</li>
+</ul>
+<pre><code class="language-groovy">compile ('org.web3j:core:3.3.1-android')
+</code></pre>
+<p>值得注意的是，目前的web3j对于高版本JDK存在不兼容的问题，如果出现如下类似的问题，直接更换JDK为version 8即可。</p>
+<p><u>Could not determine Java version using executable /Library/Java/JavaVirtualMachines/jdk-10.jdk/Contents/Home/bin/java.</u></p>
+<h3 id="2关于infura">2.关于Infura</h3>
+<p>以太坊的客户端实现有多种，但很多都需要在本地同步所有的节点数据而占用大量硬盘存储空间，并且需要消耗同步的时间。Infura就是提供一种中心化的服务，通过web3.js或者web3j使前端或服务端能便捷的访问以太坊所有节点。可以理解为一种以太坊客户端的云端版本。使用过程需要注册，一个专属的访问token。本文中使用的客户端都是Infura提供的Rinkeby测试网络。</p>
+<h3 id="3新建钱包文件keyfile">3.新建钱包文件keyfile</h3>
+<p>在以太坊中，钱包（wallet）和账户（account）是两个不同的概念。账户是以太坊的核心，由一对秘钥组成-公钥和私钥。账户可以分为两种，外部账户和合约账户。而钱包是指保存 地址、公钥、私钥的文件或其他机构，每个钱包文件至少包含一个账户。创建钱包的同时也是创建一个以太坊账户的过程不同的客户端创建钱包的方式不一致但原理相同，有关钱包是具体是如何生成的可以查看另外这篇文章。</p>
+<ol>
+<li>新建一个java工程，初始化gradle或者maven</li>
+<li>依赖web3j</li>
+<li>新建Application.java文件，设置程序入口main函数</li>
+<li>调用钱包工具类生成钱包文件</li>
+</ol>
+<pre><code class="language-Java">/*************创建一个钱包文件**************/
+private void creatAccount() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CipherException, IOException {
+    String walletFileName0=&quot;&quot;;//文件名
+    String walletFilePath0=&quot;/Users/yepeng/MyGitHub/z_wallet_temp&quot;;
+    //钱包文件保持路径，请替换位自己的某文件夹路径
+
+    walletFileName0 = WalletUtils.generateNewWalletFile(&quot;123456&quot;, new File(walletFilePath0), false);
+    //WalletUtils.generateFullNewWalletFile(&quot;password1&quot;,new File(walleFilePath1));
+    //WalletUtils.generateLightNewWalletFile(&quot;password2&quot;,new File(walleFilePath2));
+    log.info(&quot;walletName: &quot;+walletFileName0);
+}
+</code></pre>
+<p>钱包构建的过程中需要输入的三个参数，分别设置钱包的密码、保存路径、以及是否轻量级钱包。</p>
+<p>执行创建函数后，会自动在指定路径生成一个json 文件，即钱包keyfiles。
+<img src="https://upload-images.jianshu.io/upload_images/1795529-f8daa9efeadd4166.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="屏幕快照 2018-04-10 上午11.04.24.png"></p>
+<p>钱包文件结构：
+<img src="https://upload-images.jianshu.io/upload_images/1795529-ba2fb9f4583d18d7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="屏幕快照 2018-04-10 上午11.14.03.png"></p>
+<ul>
+<li>cipher：加密算法，AES算法，用于加密以太坊私钥</li>
+<li>cipherparams：cipher算法需要的参数，参数iv，是aes-128-ctr加密算法需要的初始化向量</li>
+<li>ciphertext：加密后的密文，aes-128-ctr函数的加密输入密文；</li>
+<li>kdf：秘钥生成函数，用于使用密码加密keystore文件</li>
+<li>kdfparams：kdf算法所需要的参数</li>
+<li>mac：验证密码的编码</li>
+</ul>
+<p>生成钱包的逆向过程 为加载钱包。</p>
+<h3 id="4加载钱包文件">4.加载钱包文件</h3>
+<p>加载钱包的过程需要提供钱包文件和密码</p>
+<pre><code class="language-java">/********加载钱包文件**********/
+private void loadWallet() throws IOException, CipherException {
+    String walleFilePath=&quot;/Users/yepeng/MyGitHub/z_wallet_temp/UTC--2018-04-10T02-51-24.815000000Z--12571f46ec3f81f7ebe79112be5883194d683787.json&quot;;
+    String passWord=&quot;123456&quot;;
+    credentials = WalletUtils.loadCredentials(passWord, walleFilePath);
+    String address = credentials.getAddress();
+    BigInteger publicKey = credentials.getEcKeyPair().getPublicKey();
+    BigInteger privateKey = credentials.getEcKeyPair().getPrivateKey();
+
+    log.info(&quot;address=&quot;+address);
+    log.info(&quot;public key=&quot;+publicKey);
+    log.info(&quot;private key=&quot;+privateKey);
+
+}
+</code></pre>
+<p>函数运行的结果：
+<img src="https://upload-images.jianshu.io/upload_images/1795529-b4911abab7ddf3f6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="屏幕快照 2018-04-10 上午11.10.19-3417487.png"></p>
+<p>通过工具类 <strong>WalletUtols</strong>的函数 <em>loadCredentials</em>()，会返回一个对象<strong>Credentials</strong>,这个对象即包含了钱包文件的所有信息，包括地址、秘钥对。</p>
+<p>至此，钱包的创建和加载已经完成，但这一过程全部发生在本地，并未同步到以太坊区块链。查询地址余额前，需要连接以太坊结点。</p>
+<h3 id="5构建web3j实体连接以太坊结点">5.构建Web3j实体，连接以太坊结点</h3>
+<p>web3j是连接java端与以太坊的桥梁，广播交易，查询账户都需要通过web3j实体。web3j支持通过http进行构建，而且兼容了infura。在本文中，使用的是infura的测试网络Rinkeby。</p>
+<pre><code class="language-java">/*******连接以太坊客户端**************/
+private void conectETHclient() throws IOException {
+    //连接方式1：使用infura 提供的客户端
+    web3j = Web3j.build(new HttpService(&quot;https://rinkeby.infura.io/zmd7VgRt9go0x6qlJ2Mk&quot;));// TODO: 2018/4/10 token更改为自己的
+    //连接方式2：使用本地客户端
+    //web3j = Web3j.build(new HttpService(&quot;127.0.0.1:7545&quot;));
+    //测试是否连接成功
+    String web3ClientVersion = web3j.web3ClientVersion().send().getWeb3ClientVersion();
+    log.info(&quot;version=&quot; + web3ClientVersion);
+}
+</code></pre>
+<p>web3j实体构建完成后，可以打印出版本号以测试是否连接成功。如果成功，就可以做其他的事情了。值得注意的是，web3j采用的是RxJava的设计，所以许多函数的返回值是 <strong>Request<?,?></strong>，这个对象有两种执行方式，异步和同步，即send()和sendAsyn()。</p>
+<h3 id="6查询账户余额">6.查询账户余额</h3>
+<p>查询账户的余额的方式：</p>
+<pre><code class="language-Java">/***********查询指定地址的余额***********/
+private void getBlanceOf() throws IOException {
+    if (web3j == null) return;
+    String address = &quot;0x41F1dcbC0794BAD5e94c6881E7c04e4F98908a87&quot;;//等待查询余额的地址
+    //第二个参数：区块的参数，建议选最新区块
+    EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameter.valueOf(&quot;latest&quot;)).send();
+    //格式转化 wei-ether
+    String blanceETH = Convert.fromWei(balance.getBalance().toString(), Convert.Unit.ETHER).toPlainString().concat(&quot; ether&quot;);
+    log.info(blanceETH);
+}
+</code></pre>
+<p>其中核心方法 <em>web3j.ethGetBalance(address, defaultBlockParameter）</em>  中的第二个参数比较特殊，指默认的区块参数。当请求余额的方法作用与以太坊的区块网络时，这个参数决定了查询区块的高度。</p>
+<ul>
+<li><code>HEX String</code> - 一个整数块号</li>
+<li><code>String &quot;earliest&quot;</code> 为最早/起源块</li>
+<li><code>String &quot;latest&quot;</code> - 为最新的采矿块</li>
+<li><code>String &quot;pending&quot;</code> - 待处理状态/交易</li>
+</ul>
+<p>一般情况下，选择“latest”即可。</p>
+<p>以太坊中，如果没有特殊标示，数字的单位都是小数点后18位，因此查询账户余额有必要将<strong>wei</strong>转化成<strong>ether</strong>。</p>
+<h3 id="6使用钱包进行转账">6.使用钱包进行转账</h3>
+<p>作为一个钱包，除了保存账户资产外，最重要的就是转账或交易了，利用web3j可以便捷的实现eth的转移。</p>
+<pre><code class="language-java">/    /****************交易*****************/
+    private void transto() throws Exception {
+        if (web3j == null) return;
+        if (credentials == null) return;
+        //开始发送0.01 =eth到指定地址
+        String address_to = &quot;0x41F1dcbC0794BAD5e94c6881E7c04e4F98908a87&quot;;
+        TransactionReceipt send = Transfer.sendFunds(web3j, credentials, address_to, BigDecimal.ONE, Convert.Unit.FINNEY).send();
+
+        log.info(&quot;Transaction complete:&quot;);
+        log.info(&quot;trans hash=&quot; + send.getTransactionHash());
+        log.info(&quot;from :&quot; + send.getFrom());
+        log.info(&quot;to:&quot; + send.getTo());
+        log.info(&quot;gas used=&quot; + send.getGasUsed());
+        log.info(&quot;status: &quot; + send.getStatus());
+    }
+</code></pre>
+<p>核心方法需要提供4个参数：</p>
+<ul>
+<li>web3j实体</li>
+<li>Credentials 源账户</li>
+<li>address 转出地址</li>
+<li>value 数量</li>
+<li>uint 单位</li>
+</ul>
+<p>等待片刻后，会返回转账结果</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1795529-9b74f8e85c02144c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="屏幕快照 2018-04-11 上午11.32.12.png"></p>
+<p>可以看到交易hash、转入转出地址、gas消耗等信息。同时可以在etherscan-rinkeby上进行查看<a href="https://rinkeby.etherscan.io/tx/0xe441c888fcf88585d641def7812e6b1eef67ad0ddc5f28c5afcd6b9872651fbe">本次交易详情</a></p>
+<h3 id="7总结">7.总结</h3>
+<p>上面的代码已经完成了一个以太坊钱包所需的所有基本功能，包括创建、加载、转账、查询。本文中采用的网络是infura提供的Rinkeby测试网络，创建的钱包地址为 <a href="https://rinkeby.etherscan.io/address/0x12571f46ec3f81f7ebe79112be5883194d683787">0x12571F46Ec3f81F7EbE79112Be5883194d683787</a>。</p>
+<p>在具体的业务场景中，只要将测试网络更换为以太坊主网络即可。</p>
+<p>源码地址 https://github.com/initsysctrl/we3jdemo</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://initsysctrl.github.io/tag/i-MgGpA1a" class="tag">
+                    区块链
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://initsysctrl.github.io/post/cong-bi-te-bi-shi-jiao-kan-pow-ji-zhi">
+                  <h3 class="post-title">
+                    从比特币视角看POW机制
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'fda1ade7f75745ac8086',
+        clientSecret: 'a22f4cce15954afea444a530e0862442d8a05c05',
+        repo: 'initsysctrl.github.io',
+        owner: 'initsysctrl',
+        admin: ['initsysctrl'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

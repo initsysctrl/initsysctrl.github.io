@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>从比特币视角看POW机制 | 一叶行知</title>
+<meta name="description" content="功不唐捐">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://initsysctrl.github.io/favicon.ico?v=1556735945433">
+<link rel="stylesheet" href="https://initsysctrl.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://initsysctrl.github.io">
+        <img src="https://initsysctrl.github.io/images/avatar.png?v=1556735945433" class="site-logo">
+        <h1 class="site-title">一叶行知</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      功不唐捐
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">从比特币视角看POW机制</h2>
+            <div class="post-date">2019-05-02</div>
+            
+              <div class="feature-container" style="background-image: url('https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1557340709&amp;di=7546384de91a225f87ed5e762309d437&amp;imgtype=jpg&amp;er=1&amp;src=http%3A%2F%2Fn1.itc.cn%2Fimg8%2Fwb%2Fsmccloud%2Frecom%2F2015%2F09%2F16%2F144237586375349461.JPEG')">
+              </div>
+            
+            <div class="post-content">
+              <blockquote>
+<p>ps：下面的内容需要先了解基本的区块链常识</p>
+</blockquote>
+<p>共识机制的核心只有两条：</p>
+<ul>
+<li>
+<p>谁来构建区块？</p>
+</li>
+<li>
+<p>如何维护区块？</p>
+</li>
+</ul>
+<p>虽然不同的共识机制实现方式差异很大，但目的是一样的，也就是社区节点达成记账的共识，账本内容保持一致。实现方式主要有***POW***、<em><strong>POS</strong></em>、<em><strong>DPOS</strong></em>、<em><strong>BFT</strong></em>、<em><strong>PBTF</strong></em>、<em><strong>DBTF***等。其中，因为首个作为首个区块链应用的比特币采用的是***POW</strong></em>（工作量证明）共识机制，所以这种机制最为经典。<em>没有特殊说明，以下的内容默认是通过比特币作为案例来分析这种机制，但做了不同程度的模型简化处理</em>。</p>
+<h2 id="pow简介">POW简介</h2>
+<p>比特币世界中，POW机制为挖矿而设计。这套设计的核心只有两条：</p>
+<ul>
+<li>
+<p>货币的发行只有通过“劳动”所得，即消耗计算机的算力。</p>
+</li>
+<li>
+<p>消耗算力的证明方式只有一种，即找到某个数学谜题的特解。</p>
+</li>
+</ul>
+<p>这种机制在生活中其实并不少见，比如获取大学毕业证这一过程，只有经过了四年学习，获得了学分的人才能获得毕业证。谁先获得了学分，可以证明谁付出了更多的努力，也就是提供了更多的“工作量”。而学分没有修满，无法提供有效的“工作量”证明，自然也无法获得毕业证。</p>
+<p>POW机制解决了共识问题中的第一个问题，区块是由谁来构建的。但这种机制也会引发许多问题，所以需要一些其他的设计来完善这种机制。</p>
+<h2 id="区块的组成">区块的组成</h2>
+<p>区块链通俗上指的是<strong>区块</strong>的线性(树)组合。当然也有像有向无环图之类的结构，但目前来讲链式结构始终还是一种主流。区块作为一种数据保存的媒介，记录了一段时间内，网络中发生的所有交易信息。以比特币为例，一个完整的比特币区块由如下几个部分构成：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>字节</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>区块头</td>
+<td>80</td>
+<td>头文件</td>
+</tr>
+<tr>
+<td>size</td>
+<td>4</td>
+<td>表示区块存储大小</td>
+</tr>
+<tr>
+<td>计数器</td>
+<td>1-9</td>
+<td>交易数量</td>
+</tr>
+<tr>
+<td>交易列表</td>
+<td>/</td>
+<td>没啥说的</td>
+</tr>
+</tbody>
+</table>
+<p>其中区块的头文件由如下组成：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>字节</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>版本</td>
+<td>4</td>
+<td>区块版本号</td>
+</tr>
+<tr>
+<td>父哈希</td>
+<td>32</td>
+<td>上一个区块的哈希值</td>
+</tr>
+<tr>
+<td>梅克尔根</td>
+<td>32</td>
+<td>区块中交易列表的Merkle树根的哈希值</td>
+</tr>
+<tr>
+<td>时间戳</td>
+<td>4</td>
+<td>UNIX时间戳</td>
+</tr>
+<tr>
+<td>难度级别</td>
+<td>4</td>
+<td>工作量证明的难度级别，与全局算力呈负相关性</td>
+</tr>
+<tr>
+<td>Nonce</td>
+<td>4</td>
+<td>幸运值、每次彩票开奖后的那个数字</td>
+</tr>
+</tbody>
+</table>
+<p>出于简化模型的考虑，可以将区块粗略表示成 以下图例</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1795529-ef98a13cc08b5642.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="区块构成.png"></p>
+<p>每一个区块，实际上就是一个账本，每个人都有权利去记账。这些账本通过保存一个标识（区块哈希）来构成一个链式结构，将发生在这个区块世界的所有交易记录数据线性的保存下来，形成一条很长的链子，即区块链。（这里应该说是树状的）。每一个区块都有固定的模板，模板定义了三个重要的属性：</p>
+<ul>
+<li>
+<p>交易列表，保存在一段时间的交易数据</p>
+</li>
+<li>
+<p>上一个区块的哈希，作为链接的标识</p>
+</li>
+<li>
+<p>Nonce，这个值非常特殊，下文有解释</p>
+</li>
+</ul>
+<blockquote>
+<p>ps:上面的图例中把当前区块的哈希放在区块中同样是为了简化模型考虑，实际上比特币只有在构建新区块时才会把旧的区块的哈希计算出来。</p>
+</blockquote>
+<h2 id="散列值函数">散列值函数</h2>
+<p>哈希函数(散列值函数)是在挖矿机制中起到核心作用的算法。这是一种创建任何数据的数字指纹的一种方法，其中SHA256作为变体之一，应用最为广泛。算法的细节在此不做详细解释，只归纳这种算法的特点：</p>
+<ul>
+<li>
+<p>可以把任何长度的数据生成一个固定长度的字符串，字符串由字母和数字组成</p>
+</li>
+<li>
+<p>数据源的细微改动可能造成输出值巨大的不同</p>
+</li>
+<li>
+<p>可以由数据源求出其散列值（数字指纹），但无法由一个数字指纹推导出源数据</p>
+</li>
+</ul>
+<p>测试哈希函数可以使用这个链接 <a href="http://tool.oschina.net/encrypt?type=2">散列值算法</a></p>
+<p>测试可以发现字符串“Hello,world”和“Hello,world!”对应的SHA256散列值是</p>
+<p><em>31d74184aa8f98106c3767651126828cc3d8728919c673f8af76e11a042acd69</em></p>
+<p>d7bb29d07c0cf23193c660af231ad6c6c40dde52e4efaf6d4f441b16b16f024a</p>
+<h2 id="挖矿-数字解谜游戏">挖矿-数字解谜游戏</h2>
+<p>前文中提到的区块中的<strong><em>Nonce<em><em><em>值和散列值函数都与挖矿机制紧密相关。挖矿的本质就是一次又一次的数学解谜游戏，谜题是一个散列函数的结果，谜底是这个函数的输入，而奖励就是获得了最终的区块构建权利，同时获取相应的报酬。在比特币的世界中，矿工接收者网络中的交易广播，理论上每一个矿工都可以把这些交易打包成区块，但系统设计肯定不会这么做。所以在这套独特的</em>POW</em>机制中，每个矿工都需要去寻找一个独特的数值Nonce，加入到区块中，使得最终生成的区块散列值的前十位都是0。谁先找到这个数字，那么谁将获得区块的构建权利。数据打包后，新生成的区块将被送给其他矿工验证。当验证</em></em>Nonce</strong>值和交易内容都没有问题后，那么证明这一区块得到了社区的共识，被加入到区块链最后的位置。与之同时，新的轮回开始。值得注意的是，在这个过程中，Nonce值只是称呼而已，如果可以的话，也可以干脆叫“幸运值“或者叫”彩票号码“。</p>
+<p>解谜游戏的过程可以简略概括为以下函数模型：</p>
+<blockquote>
+<p>ps:上面的公式同样做了简化模型的处理，实际在比特币设计中，这一块应该是双重SHA256，而且参数不只有上面三个。至于计算散列值的结果是“散列值前面10个为0”还是“散列值小于Target”这两者本质其实是一样的。</p>
+</blockquote>
+<p>SHA256***作为算子，输入为***Trans***、<em><strong>PreHash***和***Nonce</strong></em>，分别代表交易数据、上一个区块的哈希、以及特殊值Nonce。输出则是一个前面十位都为零的散列值。前面提到SHA256的特点是不可逆的，也就是说无法从散列值来推到出Nonce的值。同时输入数据的细微不同，也会造成输出值极大的差异。因此，解决这个数学谜题只剩下最为古典的一种方式——穷举。假设Nonce=0，代入公式，计算区块的散列值，符合目标结束，不符合，迭代。这个过程如下：
+<img src="https://upload-images.jianshu.io/upload_images/1795529-24df983ac43e31c6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="数学解谜游戏.png"></p>
+<p>而新区块的验证过程相当于这个过程的逆向，主要包含三个方面：</p>
+<ul>
+<li>
+<p>Nonce是否正确，即加入该Nonce值后新区块的散列值是否满足10个0的首位</p>
+</li>
+<li>
+<p>新区块中记录的上一个区块是否存在</p>
+</li>
+<li>
+<p>交易数据是否正确，包括地址是否合法、余额是否充足等</p>
+</li>
+</ul>
+<p>当新的区块经过多个节点验证后（不会所有节点都验证），新区块正式成立，社区得到共识，矿工获得奖励，同时也标志着该区块的&quot;挖矿&quot;结束。</p>
+<p>如果只从算法层来看，这一过程相对简单甚至粗暴。因为区块构建的权利完全取决与“机器”的工作量，不是“人”的工作量，也不是“IP”的工作量。借助密码学的一些特性，通过构建区块而获得报酬的唯一方式，就是不断重复的计算。计算求解是十分困难的，所以需要消耗大量硬件性能以及电量。当验证起来却轻松许多。从这一点看，的确和“挖矿”非常的类似——开采的过程非常辛苦，而验证是不是黄金的过程却十分简单。</p>
+<h2 id="最长链原则">最长链原则</h2>
+<p>挖矿机制的出现为“谁来构建区块”提供了答案，但共识问题还有一个更重要的问题：如何维护区块。在一个分布式系统中，挖矿这个动作是并行发生的。也就是说，不断递增的区块其实并不是一个标准的线性结构，而是一个树状结构。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1795529-32e813219e723726.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="最长链原则.png"></p>
+<p>在同一时刻，社区中可能出现多份的基于同一个父区块的子区块。如上图中，基于父区块A1有两个矿工都找到了那个幸运值Nonce，此时A2和B2都是合法的。随着时间的推移，两个分支的长度将会有所区别，而系统只认为最长的那条分支为主分支。对于需要记账的矿工而言，上一个账本（父区块）永远都是最长分支的最高的那一个区块。这种模式被称为 <strong>最长链原则</strong>。</p>
+<h2 id="双花问题double-spending">双花问题（double-spending）</h2>
+<p>双花问题是由最长链原则而引发的问题 。由于系统总是认为最长的那一条链是主分支，因此可能有人劫持算力并伪造账本。类似于上图的情况，某人在A1的情况下发生了一笔交易，随着时间推移，发展到新区块A2，当此时如果有人找到A1的账簿，并取消这笔交易，重新计算一个分支。如果子分支的长度比当前主分支的长度更长，那么子分支就变成了主分支，而之前的那笔交易就被篡改了。</p>
+<p>比特币的设计中，对双花攻击的处理有点特殊。系统只是建议 一次交易之后，需要经过6次确认才被认可。具体是指的，一笔交易发生之后，又连续生成了6个新的区块，这笔交易才算真的被确认合法。这样，要实现双花攻击，需要在落后六个区块的基础上，追赶主要分支 。很明显，这样做的结果是即便实现了攻击，也需要付出巨额的算力成本。在这种设计中，特殊之处在于系统宁愿牺牲交易的确认效率也不愿意”<em><strong>回滚</strong></em>“。一个区块一旦创建就只会永远存在而不可被修改更不会被删除，哪怕这个区块有问题。</p>
+<h2 id="平衡">平衡</h2>
+<p>在对于区块的维护上，仅仅有基本的 <strong>最长链原则</strong>是不够的。POW机制还定义了一些其他的规则，这些规则构建出一种奇妙的平衡。</p>
+<ol>
+<li>矿工利益与系统稳定的博弈</li>
+</ol>
+<p>POW机制中最重要的角色是矿工，矿工需要消耗大量的能源来换取算力，以此来构建区块获得报酬（即被一次挖矿成功都会获得一次系统的奖励），这是比特世界中唯一的铸币产生方式。但如果不断发行新币，会在将来产生通货膨胀问题。所以系统规定挂单的收益随着区块高度达到一定级别（210000）而半衰减。而区块的生成速度可以根据算力进行调控，以保证平均10分钟一个区块。因此比特币的总和是一个等比数列的和：
+[站外图片上传中...(image-744653-1522319748663)])
+其中a1=50,q=0.5。这是一个收敛的函数，随着n的增大Sn最终趋近于21000000。
+<img src="http://upload-images.jianshu.io/upload_images/1795529-9e68635376aa4af2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>衰减模式虽然解决了通货膨胀问题，但随着时间递增，挖矿收益将变得越来越低。当挖矿收益低于成本消耗后，挖矿的意义便不复存在。因此，在比特币的设计中，除了挖矿收益，矿工还可以通过打包交易时收取手续费来获取收益。这样即便挖矿没有了奖励，也不至于引发矿工的“罢工运动”。不得不说的确是一种精妙的设计。</p>
+<blockquote>
+<p>ps：有意思的是以太坊的前中期版本中同样采用POW机制，但货币却采用逐年增发的机制，白皮书中的解释是每年都有若干货币被永久丢失，因此需要增发一点点来保持总数平衡。</p>
+</blockquote>
+<p><img src="https://upload-images.jianshu.io/upload_images/1795529-b916c66657fdb9c4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="矿工与系统的稳定性.png"></p>
+<ol start="2">
+<li>“良民”与“暴民”的选择</li>
+</ol>
+<p>所谓的“良民”是指矿工，这批用户打包交易、构建区块、验证区块，共同推动社区的发展，维护系统的稳定。所谓的“暴民”是指攻击系统，干扰交易、恶意分叉的社区破坏分子。在区块链系统中，良民与暴民的选择并不取决于人性的善恶，而取决于哪一种身份的收益更高。由于比特币的“最长链原则”，社区始终把最长的分支作为标准分支，即便出现了一些小的分支，也由于算力的落后，逐渐淹没在历史的长河里。而且即便一个人劫持了50%以上的算力，攻击系统的收益甚至还没有当矿工老老实实的挖矿的收益高。如果需要对这一机制用一句话概括的话，那么就是“只有老实人不吃亏的情况下，人们才会自愿成为老实人”。</p>
+<h2 id="总结">总结</h2>
+<p>其实这篇博客并不是单纯对POW机制进行更深入的分析，只是借助比特币分析这种古典的共识机制在区块链中的应用，所以模型都做了一些简化。正如开篇而言，共识机制在区块链中的价值主要体现在两个方面：谁来构建区块？又该如何维护区块。POW机制虽然提供了这类问题的一种解决方式，但并不完美。高昂的算力成本一直受人诟病，这也为后来的POS、DPos以及拜占庭系列机制提供了机会。而且，这种机制是原理上”去中心化“最彻底的一个，它根本不信任人，包括IP也不信任，什么资本、投票都不需要。它笃信只有机器才不会撒谎，只有CPU(或GPU)不断迭代的计算才是真正的”工作量“。原理上，这种机制似乎想构建出一个人人都是公平的，人人都可以挖矿的乌托邦。但实际上，这种机制最大的结果是大面积的算力几乎都集中在极少数的矿主手里。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://initsysctrl.github.io/post/about">
+                  <h3 class="post-title">
+                    关于
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'fda1ade7f75745ac8086',
+        clientSecret: 'a22f4cce15954afea444a530e0862442d8a05c05',
+        repo: 'initsysctrl.github.io',
+        owner: 'initsysctrl',
+        admin: ['initsysctrl'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
