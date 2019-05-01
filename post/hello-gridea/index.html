@@ -9,9 +9,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="/Users/yepeng/Documents/Gridea/output/favicon.ico?v=1556732558507">
-<link rel="stylesheet" href="/Users/yepeng/Documents/Gridea/output/styles/main.css">
+<link rel="shortcut icon" href="https://initsysctrl.github.io/favicon.ico?v=1556734548528">
+<link rel="stylesheet" href="https://initsysctrl.github.io/styles/main.css">
 
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -28,8 +34,8 @@
       <div class="sidebar" :class="{ 'full-height': menuVisible }">
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
-      <a class="site-title-container" href="/Users/yepeng/Documents/Gridea/output">
-        <img src="/Users/yepeng/Documents/Gridea/output/images/avatar.png?v=1556732558507" class="site-logo">
+      <a class="site-title-container" href="https://initsysctrl.github.io">
+        <img src="https://initsysctrl.github.io/images/avatar.png?v=1556734548528" class="site-logo">
         <h1 class="site-title">Gridea</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -39,25 +45,25 @@
     <div>
       
         
-          <a href="/Users/yepeng/Documents/Gridea/output//index.html" class="site-nav">
+          <a href="/" class="site-nav">
             首页
           </a>
         
       
         
-          <a href="/Users/yepeng/Documents/Gridea/output/archives/index.html" class="site-nav">
+          <a href="/archives" class="site-nav">
             归档
           </a>
         
       
         
-          <a href="/Users/yepeng/Documents/Gridea/output/tags/index.html" class="site-nav">
+          <a href="/tags" class="site-nav">
             标签
           </a>
         
       
         
-          <a href="/Users/yepeng/Documents/Gridea/output/post/about/index.html" class="site-nav">
+          <a href="/post/about" class="site-nav">
             关于
           </a>
         
@@ -94,7 +100,7 @@
             <h2 class="post-title">Hello Gridea</h2>
             <div class="post-date">2018-12-12</div>
             
-              <div class="feature-container" style="background-image: url('file:////Users/yepeng/Documents/Gridea/output/post-images/hello-gridea.png')">
+              <div class="feature-container" style="background-image: url('https://initsysctrl.github.io/post-images/hello-gridea.png')">
               </div>
             
             <div class="post-content">
@@ -124,7 +130,7 @@
             
               <div class="tag-container">
                 
-                  <a href="/Users/yepeng/Documents/Gridea/output/tag/gridea/index.html" class="tag">
+                  <a href="https://initsysctrl.github.io/tag/gridea" class="tag">
                     Gridea
                   </a>
                 
@@ -132,6 +138,12 @@
             
             
 
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
             
 
           </div>
@@ -156,6 +168,29 @@ var app = new Vue({
 })
 
 </script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'fda1ade7f75745ac8086',
+        clientSecret: 'a22f4cce15954afea444a530e0862442d8a05c05',
+        repo: 'initsysctrl.github.io',
+        owner: 'initsysctrl',
+        admin: ['initsysctrl'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
 
 
 
