@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://initsysctrl.github.io/favicon.ico?v=1556735945433">
+<link rel="shortcut icon" href="https://initsysctrl.github.io/favicon.ico?v=1556736475359">
 <link rel="stylesheet" href="https://initsysctrl.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://initsysctrl.github.io">
-        <img src="https://initsysctrl.github.io/images/avatar.png?v=1556735945433" class="site-logo">
+        <img src="https://initsysctrl.github.io/images/avatar.png?v=1556736475359" class="site-logo">
         <h1 class="site-title">一叶行知</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -104,8 +104,7 @@
               </div>
             
             <div class="post-content">
-              <p><img src="http://upload-images.jianshu.io/upload_images/1795529-f0d7d1a172bc8cb9.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
-<p>本篇是关于“如何使用OmniCore在服务端构建USDT钱包”系列的下篇，主要是对上一篇<a href="https://www.jianshu.com/p/bd573e2df746">《使用OmniCore构建USDT钱包(一)》</a>的补充和总结。上一篇主要对安装、配置和基本json-api使用，以及交易所钱包模型做了简略的说明，这一篇将对常见错误、安全机制以及其他扩展做一些技术分享。</p>
+              <p>本篇是关于“如何使用OmniCore在服务端构建USDT钱包”系列的下篇，主要是对上一篇<a href="https://www.jianshu.com/p/bd573e2df746">《使用OmniCore构建USDT钱包(一)》</a>的补充和总结。上一篇主要对安装、配置和基本json-api使用，以及交易所钱包模型做了简略的说明，这一篇将对常见错误、安全机制以及其他扩展做一些技术分享。</p>
 <h3 id="1omni_funded_send-212错误">1.omni_funded_send -212错误</h3>
 <p>从v0.3.1开始omnicore提供了新的转账api <a href="https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_funded_send">omni_funded_send</a> 来支持USDT的转账操作。与之前的方式不同在于，omni_funded_send支持从第三方支付手续费。但在实际操作，明明拥有充足的btc用于支付手续费，也有充分的usdt用于转账，还是会频繁出现编号**-212**错误：</p>
 <pre><code class="language-shel">$ ./omnicore-cli omni_funded_send &quot;mrAVAPxdQEZxFkunh56skB6sgJa6vrfrpo&quot; &quot;msJ2h47ZrxFJjksVvPy8ik4h2HFfa9W1zV&quot; 31 &quot;100.01&quot; &quot;mpaumxor659PhoJhXp1VCVHVwbFCZSRmuf&quot;
